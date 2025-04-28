@@ -16,7 +16,8 @@
     "redis": "^4.6.6",
     "helmet": "^6.1.5",
     "morgan": "^1.10.0",
-    "express-rate-limit": "^6.7.0"
+    "express-rate-limit": "^6.7.0",
+    "@stellar/stellar-sdk": "^11.0.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
