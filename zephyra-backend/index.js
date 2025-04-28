@@ -67,6 +67,7 @@ app.get('/health', (req, res) => {
 app.use('/api/users', require('./routes/users'));
 app.use('/api/transactions', require('./routes/transactions'));
 app.use('/api/pools', require('./routes/pools'));
+app.use('/api/pool-service', require('./routes/poolService'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
