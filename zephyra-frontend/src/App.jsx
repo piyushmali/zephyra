@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { isConnected, getPublicKey } from '@stellar/freighter-api';
+import freighterUtils from './utils/freighter';
 
 /**
  * App Component for Zephyra - A Stellar Testnet Remittance Platform
@@ -20,14 +20,24 @@ function App() {
   useEffect(() => {
     const checkWalletConnection = async () => {
       try {
+        // Check if Freighter is installed
+        if (!freighterUtils.isFreighterInstalled()) {
+          setError('Freighter extension is not installed. Please install Freighter to continue.');
+          return;
+        }
+        
         // Check if Freighter is connected
-        const connected = await isConnected();
+        const connected = await freighterUtils.checkFreighterConnection();
         setWalletConnected(connected);
         
         // If connected, get the public key
         if (connected) {
-          const stellarPublicKey = await getPublicKey();
-          setPublicKey(stellarPublicKey);
+          // Ensure we're on the Testnet
+          await freighterUtils.setNetworkToTestnet();
+          
+          // Get account details
+          const accountDetails = await freighterUtils.getFreighterAccountDetails();
+          setPublicKey(accountDetails.publicKey);
         }
       } catch (err) {
         console.error('Error checking wallet connection:', err);
@@ -46,8 +56,8 @@ function App() {
     try {
       setError(null); // Clear any previous errors
       
-      // Get the public key from Freighter
-      const stellarPublicKey = await getPublicKey();
+      // Connect to wallet using our utility function
+      const stellarPublicKey = await freighterUtils.connectWallet();
       
       // Update state with the retrieved public key
       setPublicKey(stellarPublicKey);
@@ -56,13 +66,7 @@ function App() {
       console.log('Connected to wallet with public key:', stellarPublicKey);
     } catch (err) {
       console.error('Error connecting to wallet:', err);
-      
-      // Set appropriate error message based on the error
-      if (err.message && err.message.includes('User rejected')) {
-        setError('Connection rejected. Please approve the connection request in Freighter.');
-      } else {
-        setError('Failed to connect to Freighter wallet. Please make sure the extension is installed and unlocked.');
-      }
+      setError(err.message || 'Failed to connect to Freighter wallet');
     }
   };
 
