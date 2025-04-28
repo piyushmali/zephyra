@@ -28,6 +28,12 @@ const poolSchema = new mongoose.Schema({
     default: 0,
     min: 0
   },
+  yield: {
+    type: Number,
+    default: 0,
+    min: 0,
+    description: 'Annual percentage yield (APY) for the pool'
+  },
   isActive: {
     type: Boolean,
     default: true
