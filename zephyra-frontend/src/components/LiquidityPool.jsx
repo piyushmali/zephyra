@@ -8,7 +8,6 @@
 import React, { useState, useEffect } from 'react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
-import ConnectFreighterButton from './ConnectFreighterButton';
 import apiUtils from '../utils/api';
 
 // Register ChartJS components
@@ -16,11 +15,12 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 /**
  * LiquidityPool Component
+ * @param {Object} props - Component props
+ * @param {string} props.publicKey - User's public key from Freighter wallet
  * @returns {JSX.Element} LiquidityPool component
  */
-const LiquidityPool = () => {
-  // State for wallet and pools
-  const [publicKey, setPublicKey] = useState(null);
+const LiquidityPool = ({ publicKey }) => {
+  // State for pools
   const [pools, setPools] = useState([]);
   const [selectedPool, setSelectedPool] = useState(null);
   const [userLiquidity, setUserLiquidity] = useState({});
@@ -40,11 +40,6 @@ const LiquidityPool = () => {
   });
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  
-  // Handle wallet connection
-  const handleWalletConnect = (connectedPublicKey) => {
-    setPublicKey(connectedPublicKey);
-  };
   
   // Fetch pools on component mount
   useEffect(() => {
@@ -205,10 +200,6 @@ const LiquidityPool = () => {
     <div className="liquidity-pool-container bg-white shadow-md rounded-lg p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold text-gray-800">Liquidity Pools</h2>
-        
-        {!publicKey && (
-          <ConnectFreighterButton onConnect={handleWalletConnect} />
-        )}
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -301,8 +292,8 @@ const LiquidityPool = () => {
                 
                 {!publicKey ? (
                   <div className="text-center py-6">
-                    <p className="text-gray-500 mb-4">Connect your Freighter wallet to manage liquidity</p>
-                    <ConnectFreighterButton onConnect={handleWalletConnect} large />
+                    <p className="text-gray-500 mb-4">Your wallet is already connected in the Dashboard.</p>
+                    <p className="text-gray-500 mb-4">Please use the wallet connection in the Dashboard header.</p>
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit}>

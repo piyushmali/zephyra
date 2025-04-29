@@ -29,7 +29,15 @@ router.get('/', async (req, res) => {
  */
 router.get('/user/:userId', async (req, res) => {
   try {
-    const transactions = await Transaction.find({ userId: req.params.userId })
+    // First find the user by publicKey
+    const user = await User.findOne({ publicKey: req.params.userId });
+    
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+    
+    // Then find transactions using the MongoDB ObjectId
+    const transactions = await Transaction.find({ userId: user._id })
       .populate('userId', 'publicKey alias')
       .select('-__v')
       .sort({ createdAt: -1 });

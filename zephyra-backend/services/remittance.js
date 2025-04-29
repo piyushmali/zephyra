@@ -205,8 +205,12 @@ const getExchangeRate = async (sourceAsset, destinationAsset) => {
     // Get the Stellar server instance
     const server = stellarUtils.getServer();
     
-    // Get the liquidity pool details
-    const liquidityPool = await server.getLiquidityPool(pool.stellarPoolId).call();
+    // Get the liquidity pool details using the correct method for Stellar SDK v11.0.1
+    const liquidityPoolResponse = await server.liquidityPools()
+      .liquidityPoolId(pool.stellarPoolId)
+      .call();
+    
+    const liquidityPool = liquidityPoolResponse;
     
     // Calculate exchange rate based on reserves
     const reserveA = parseFloat(liquidityPool.reserves[0].amount);

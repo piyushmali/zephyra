@@ -83,7 +83,7 @@ function App() {
         onTabChange={handleTabChange}
       />
       
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <main className="w-full mx-auto py-4 px-2 sm:px-3 lg:px-4">
         {error && (
           <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
             {error}
@@ -94,11 +94,8 @@ function App() {
       </main>
       
       <footer className="bg-white border-t border-gray-200 py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-500">
-              &copy; {new Date().getFullYear()} Zephyra - Stellar Testnet Remittance Platform
-            </div>
+        <div className="w-full mx-auto px-2 sm:px-3 lg:px-4">
+          <div className="flex justify-center items-center">
             <div className="text-sm text-gray-500">
               Built on <a href="https://stellar.org" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800">Stellar</a>
             </div>

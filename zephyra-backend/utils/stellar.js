@@ -20,7 +20,7 @@ const NETWORK_PASSPHRASE = process.env.STELLAR_NETWORK === 'PUBLIC'
  * @returns {StellarSdk.Server} Configured Stellar Server instance
  */
 const getServer = () => {
-  return new StellarSdk.Server(HORIZON_URL);
+  return new StellarSdk.Horizon.Server(HORIZON_URL);
 };
 
 /**
