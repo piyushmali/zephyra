@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import './App.css';
+import { isConnected, getPublicKey } from '@stellar/freighter-api';
 import Navigation from './components/Navigation';
 import Dashboard from './components/Dashboard';
 import TransactionForm from './components/TransactionForm';
 import TransactionHistory from './components/TransactionHistory';
 import LiquidityPool from './components/LiquidityPool';
-import freighterUtils from './utils/freighter';
 
 /**
  * Main App Component for Zephyra
@@ -15,40 +14,36 @@ import freighterUtils from './utils/freighter';
  * the selected tab.
  */
 function App() {
-  // State for wallet and navigation
   const [publicKey, setPublicKey] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [error, setError] = useState(null);
-  
-  // Check if Freighter is installed and connected on component mount
+
+  // Check wallet connection on app load
   useEffect(() => {
-    const checkFreighterConnection = async () => {
+    const checkConnection = async () => {
       try {
-        if (!freighterUtils.isFreighterInstalled()) {
-          console.log('Freighter wallet extension is not installed');
-          return;
-        }
-        
-        const connected = await freighterUtils.checkFreighterConnection();
+        const connected = await isConnected();
         if (connected) {
-          const accountDetails = await freighterUtils.getFreighterAccountDetails();
-          setPublicKey(accountDetails.publicKey);
+          const key = await getPublicKey();
+          setPublicKey(key);
         }
       } catch (err) {
-        console.error('Error checking Freighter connection:', err);
-        setError(`Error connecting to Freighter: ${err.message}`);
+        console.error('Error checking wallet connection:', err);
       }
     };
-    
-    checkFreighterConnection();
+    checkConnection();
   }, []);
-  
-  // Handle wallet connection
-  const handleWalletConnect = (connectedPublicKey) => {
-    setPublicKey(connectedPublicKey);
+
+  const handleWalletConnect = async (key) => {
+    setPublicKey(key);
     setError(null);
   };
-  
+
+  const handleWalletDisconnect = () => {
+    setPublicKey(null);
+    setError(null);
+  };
+
   // Handle tab change
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
@@ -62,27 +57,30 @@ function App() {
   
   // Render active component based on selected tab
   const renderActiveComponent = () => {
+    const commonProps = {
+      publicKey,
+      onDisconnect: handleWalletDisconnect
+    };
+
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard />;
+        return <Dashboard {...commonProps} onConnect={handleWalletConnect} />;
       case 'send':
-        return <TransactionForm onTransactionComplete={handleTransactionComplete} />;
+        return <TransactionForm {...commonProps} onTransactionComplete={handleTransactionComplete} />;
       case 'history':
-        return <TransactionHistory />;
+        return <TransactionHistory {...commonProps} />;
       case 'pools':
-        return <LiquidityPool />;
+        return <LiquidityPool {...commonProps} />;
       default:
-        return <Dashboard />;
+        return <Dashboard {...commonProps} onConnect={handleWalletConnect} />;
     }
   };
-  
+
   return (
     <div className="App min-h-screen bg-gray-100">
       <Navigation 
         activeTab={activeTab} 
-        onTabChange={handleTabChange} 
-        publicKey={publicKey}
-        onConnect={handleWalletConnect}
+        onTabChange={handleTabChange}
       />
       
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">

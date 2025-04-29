@@ -8,15 +8,8 @@
 import React, { useState, useEffect } from 'react';
 import freighterUtils from '../utils/freighter';
 import apiUtils from '../utils/api';
-import ConnectFreighterButton from './ConnectFreighterButton';
 
-/**
- * TransactionForm Component
- * @param {Object} props - Component props
- * @param {Function} props.onTransactionComplete - Callback function when transaction is complete
- * @returns {JSX.Element} TransactionForm component
- */
-const TransactionForm = ({ onTransactionComplete }) => {
+const TransactionForm = ({ publicKey, onTransactionComplete }) => {
   // Form state
   const [formData, setFormData] = useState({
     sourceAsset: 'USD',
@@ -27,7 +20,6 @@ const TransactionForm = ({ onTransactionComplete }) => {
   });
   
   // Transaction state
-  const [publicKey, setPublicKey] = useState(null);
   const [exchangeRate, setExchangeRate] = useState(null);
   const [estimatedReceive, setEstimatedReceive] = useState(null);
   const [fee, setFee] = useState(null);
@@ -35,19 +27,11 @@ const TransactionForm = ({ onTransactionComplete }) => {
   const [transactionId, setTransactionId] = useState(null);
   
   // UI state
-  const [loading, setLoading] = useState({
-    rate: false,
-    submit: false
-  });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [step, setStep] = useState(1); // 1: Form, 2: Preview, 3: Confirm, 4: Result
+  const [step, setStep] = useState(1);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [availableCorridors, setAvailableCorridors] = useState([]);
-  
-  // Handle wallet connection
-  const handleWalletConnect = (connectedPublicKey) => {
-    setPublicKey(connectedPublicKey);
-  };
   
   // Fetch available corridors on component mount
   useEffect(() => {
@@ -123,19 +107,27 @@ const TransactionForm = ({ onTransactionComplete }) => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!publicKey) {
-      setError('Please connect your Freighter wallet');
-      return;
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (!publicKey) {
+        setError('Please connect your Freighter wallet');
+        return;
+      }
+      
+      if (!formData.amount || !formData.destinationAddress) {
+        setError('Please fill in all required fields');
+        return;
+      }
+      
+      // Move to preview step
+      setStep(2);
+    } catch (err) {
+      setError(err.message || 'Failed to process transaction');
+    } finally {
+      setLoading(false);
     }
-    
-    if (!formData.amount || !formData.destinationAddress) {
-      setError('Please fill in all required fields');
-      return;
-    }
-    
-    // Move to preview step
-    setStep(2);
   };
   
   // Handle transaction creation
@@ -189,15 +181,15 @@ const TransactionForm = ({ onTransactionComplete }) => {
       // Sign transaction with Freighter
       const signedXdr = await freighterUtils.signStellarTransaction(transactionXdr);
       
-      // Submit signed transaction
-      const result = await apiUtils.submitRemittance(signedXdr, transactionId);
+      // Submit signed transaction and store result
+      const submitResult = await apiUtils.submitRemittance(signedXdr, transactionId);
+      console.log('Transaction submitted:', submitResult);
       
       // Move to result step
       setStep(4);
       
-      // Call onTransactionComplete callback if provided
       if (onTransactionComplete) {
-        onTransactionComplete(result);
+        onTransactionComplete();
       }
     } catch (err) {
       console.error('Error signing/submitting transaction:', err);
@@ -521,28 +513,26 @@ const TransactionForm = ({ onTransactionComplete }) => {
   );
   
   return (
-    <div className="transaction-form-container bg-white shadow-md rounded-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-gray-800">Send Remittance</h2>
-        
-        {!publicKey && (
-          <ConnectFreighterButton onConnect={handleWalletConnect} />
-        )}
+    <div className="p-4">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Send Remittance</h1>
+          <p className="text-gray-600 mb-6">Stellar Testnet Remittance Platform</p>
+
+          {!publicKey ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500 mb-4">Please connect your wallet in the Dashboard to send money</p>
+            </div>
+          ) : (
+            <div>
+              {step === 1 && renderFormStep()}
+              {step === 2 && renderPreviewStep()}
+              {step === 3 && renderConfirmStep()}
+              {step === 4 && renderResultStep()}
+            </div>
+          )}
+        </div>
       </div>
-      
-      {!publicKey ? (
-        <div className="text-center py-8">
-          <p className="text-gray-500 mb-4">Connect your Freighter wallet to create a transaction</p>
-          <ConnectFreighterButton onConnect={handleWalletConnect} large />
-        </div>
-      ) : (
-        <div>
-          {step === 1 && renderFormStep()}
-          {step === 2 && renderPreviewStep()}
-          {step === 3 && renderConfirmStep()}
-          {step === 4 && renderResultStep()}
-        </div>
-      )}
     </div>
   );
 };

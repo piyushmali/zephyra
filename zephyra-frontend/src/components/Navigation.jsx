@@ -6,18 +6,15 @@
  */
 
 import React, { useState } from 'react';
-import ConnectFreighterButton from './ConnectFreighterButton';
 
 /**
  * Navigation Component
  * @param {Object} props - Component props
  * @param {string} props.activeTab - Currently active tab
  * @param {Function} props.onTabChange - Callback when tab changes
- * @param {string} props.publicKey - User's public key if connected
- * @param {Function} props.onConnect - Callback when wallet connects
  * @returns {JSX.Element} Navigation component
  */
-const Navigation = ({ activeTab, onTabChange, publicKey, onConnect }) => {
+const Navigation = ({ activeTab, onTabChange }) => {  // Remove wallet props
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Navigation tabs
@@ -75,7 +72,7 @@ const Navigation = ({ activeTab, onTabChange, publicKey, onConnect }) => {
   };
   
   return (
-    <nav className="bg-white shadow-md">
+    <nav className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
@@ -100,10 +97,6 @@ const Navigation = ({ activeTab, onTabChange, publicKey, onConnect }) => {
                 </button>
               ))}
             </div>
-          </div>
-          
-          <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            <ConnectFreighterButton onConnect={onConnect} />
           </div>
           
           {/* Mobile menu button */}
@@ -151,7 +144,7 @@ const Navigation = ({ activeTab, onTabChange, publicKey, onConnect }) => {
         
         <div className="pt-4 pb-3 border-t border-gray-200">
           <div className="flex items-center px-4">
-            <ConnectFreighterButton onConnect={onConnect} />
+    
           </div>
         </div>
       </div>

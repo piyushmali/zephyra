@@ -10,7 +10,6 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import ConnectFreighterButton from './ConnectFreighterButton';
 import apiUtils from '../utils/api';
-import freighterUtils from '../utils/freighter';
 
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend);

@@ -10,7 +10,6 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearSca
 import { Pie, Line } from 'react-chartjs-2';
 import ConnectFreighterButton from './ConnectFreighterButton';
 import apiUtils from '../utils/api';
-import freighterUtils from '../utils/freighter';
 
 // Register ChartJS components
 ChartJS.register(
@@ -29,9 +28,8 @@ ChartJS.register(
  * Dashboard Component
  * @returns {JSX.Element} Dashboard component
  */
-const Dashboard = () => {
+const Dashboard = ({ publicKey, onConnect, onDisconnect }) => {
   // State for wallet and data
-  const [publicKey, setPublicKey] = useState(null);
   const [walletBalance, setWalletBalance] = useState(null);
   const [pools, setPools] = useState([]);
   const [savings, setSavings] = useState(null);
@@ -48,11 +46,6 @@ const Dashboard = () => {
     transactions: null,
     balance: null
   });
-
-  // Handle wallet connection
-  const handleWalletConnect = async (connectedPublicKey) => {
-    setPublicKey(connectedPublicKey);
-  };
 
   // Fetch pools data
   useEffect(() => {
@@ -73,11 +66,32 @@ const Dashboard = () => {
     fetchPools();
   }, []);
 
-  // Fetch user data when public key is available
+  // Update fetchUserData to get actual XLM balance
   useEffect(() => {
     if (!publicKey) return;
 
     const fetchUserData = async () => {
+      // Fetch wallet balance
+      try {
+        setLoading(prev => ({ ...prev, balance: true }));
+        const response = await fetch(`https://horizon-testnet.stellar.org/accounts/${publicKey}`);
+        const accountData = await response.json();
+        const xlmBalance = accountData.balances.find(b => b.asset_type === 'native')?.balance || '0';
+        
+        setWalletBalance({
+          XLM: xlmBalance,
+          // Keep other balances if needed
+          USD: walletBalance?.USD || '0',
+          EUR: walletBalance?.EUR || '0'
+        });
+        setError(prev => ({ ...prev, balance: null }));
+      } catch (err) {
+        console.error('Error fetching balance:', err);
+        setError(prev => ({ ...prev, balance: err.message || 'Failed to fetch balance' }));
+      } finally {
+        setLoading(prev => ({ ...prev, balance: false }));
+      }
+
       // Fetch user savings
       try {
         setLoading(prev => ({ ...prev, savings: true }));
@@ -103,29 +117,10 @@ const Dashboard = () => {
       } finally {
         setLoading(prev => ({ ...prev, transactions: false }));
       }
-
-      // Fetch wallet balance
-      try {
-        setLoading(prev => ({ ...prev, balance: true }));
-        // This would use Stellar SDK to get balance, but for simplicity we'll mock it
-        // In a real app, you would use stellarUtils to get the actual balance
-        const mockBalance = {
-          XLM: '1250.5000000',
-          USD: '500.0000000',
-          EUR: '200.0000000'
-        };
-        setWalletBalance(mockBalance);
-        setError(prev => ({ ...prev, balance: null }));
-      } catch (err) {
-        console.error('Error fetching balance:', err);
-        setError(prev => ({ ...prev, balance: err.message || 'Failed to fetch balance' }));
-      } finally {
-        setLoading(prev => ({ ...prev, balance: false }));
-      }
     };
 
     fetchUserData();
-  }, [publicKey]);
+  }, [publicKey, walletBalance?.USD, walletBalance?.EUR]);
 
   // Prepare pool distribution chart data
   const poolDistributionData = {
@@ -185,7 +180,7 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container p-4">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Header Section */}
+        {/* Header with Connect/Disconnect */}
         <div className="lg:col-span-12 flex flex-col md:flex-row justify-between items-center bg-white rounded-lg shadow-md p-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Zephyra Dashboard</h1>
@@ -193,25 +188,33 @@ const Dashboard = () => {
           </div>
           <div className="mt-4 md:mt-0">
             {!publicKey ? (
-              <ConnectFreighterButton onConnect={handleWalletConnect} large />
+              <ConnectFreighterButton onConnect={onConnect} large />
             ) : (
-              <div className="flex items-center bg-gray-100 rounded-lg p-3">
-                <div className="mr-3">
-                  <div className="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">
-                    {publicKey.substring(0, 1)}
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center bg-gray-100 rounded-lg p-3">
+                  <div className="mr-3">
+                    <div className="h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">
+                      {publicKey.substring(0, 1)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-gray-700">Connected Wallet</div>
+                    <div className="text-xs text-gray-500 truncate w-32 md:w-48">
+                      {publicKey.substring(0, 6)}...{publicKey.substring(publicKey.length - 6)}
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <div className="text-sm font-medium text-gray-700">Connected Wallet</div>
-                  <div className="text-xs text-gray-500 truncate w-32 md:w-48">
-                    {publicKey.substring(0, 6)}...{publicKey.substring(publicKey.length - 6)}
-                  </div>
-                </div>
+                <button
+                  onClick={onDisconnect}
+                  className="text-red-600 hover:text-red-800 font-medium"
+                >
+                  Disconnect
+                </button>
               </div>
             )}
           </div>
         </div>
-
+        
         {/* Wallet Information Panel */}
         <div className="lg:col-span-4 bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Wallet Information</h2>
@@ -219,7 +222,6 @@ const Dashboard = () => {
           {!publicKey ? (
             <div className="text-center py-8">
               <p className="text-gray-500 mb-4">Connect your Freighter wallet to view your balance and account details</p>
-              <ConnectFreighterButton onConnect={handleWalletConnect} />
             </div>
           ) : loading.balance ? (
             <div className="animate-pulse">
@@ -234,7 +236,7 @@ const Dashboard = () => {
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-gray-600">XLM Balance:</span>
-                  <span className="font-semibold">{walletBalance?.XLM || '0'} XLM</span>
+                  <span className="font-semibold">{Number(walletBalance?.XLM).toFixed(7)} XLM</span>
                 </div>
                 {walletBalance?.USD && (
                   <div className="flex justify-between items-center mb-2">
@@ -257,7 +259,8 @@ const Dashboard = () => {
                 <button className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-md text-sm transition-colors duration-300">
                   Receive
                 </button>
-                <button className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-md text-sm transition-colors duration-300">
+                <button className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-md text-sm transition-colors duration-300"
+                        onClick={() => window.open(`https://testnet.steexp.com/account/${publicKey}`, '_blank')}>
                   View on Explorer
                 </button>
               </div>
@@ -314,7 +317,6 @@ const Dashboard = () => {
           {!publicKey ? (
             <div className="text-center py-8">
               <p className="text-gray-500 mb-4">Connect your Freighter wallet to view your savings</p>
-              <ConnectFreighterButton onConnect={handleWalletConnect} />
             </div>
           ) : loading.savings ? (
             <div className="animate-pulse">
@@ -352,13 +354,17 @@ const Dashboard = () => {
         <div className="lg:col-span-6 bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-800">Recent Activity</h2>
-            <a href="#" className="text-indigo-600 hover:text-indigo-800 text-sm">View All</a>
+            <button 
+              onClick={() => {/* Add functionality here */}} 
+              className="text-indigo-600 hover:text-indigo-800 text-sm"
+            >
+              View All
+            </button>
           </div>
           
           {!publicKey ? (
             <div className="text-center py-8">
               <p className="text-gray-500 mb-4">Connect your Freighter wallet to view your recent transactions</p>
-              <ConnectFreighterButton onConnect={handleWalletConnect} />
             </div>
           ) : loading.transactions ? (
             <div className="animate-pulse">
