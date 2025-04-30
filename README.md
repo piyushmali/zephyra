@@ -6,7 +6,7 @@
 
 ## Overview
 
-Zephyra is a Stellar Testnet remittance platform that enables users to send, receive, and manage digital assets on the Stellar blockchain network. The platform integrates with the Freighter wallet for secure transaction signing and provides features for managing liquidity pools, tracking transaction history, and monitoring account balances.
+Zephyra is a Stellar remittance platform that enables users to send, receive, and manage digital assets on the Stellar blockchain network. The platform integrates with the Freighter wallet for secure transaction signing and provides features for managing liquidity pools, tracking transaction history, and monitoring account balances.
 
 ## Features
 
