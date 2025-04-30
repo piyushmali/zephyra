@@ -1,6 +1,6 @@
 # Zephyra
 
-![Zephyra Logo](docs/zephyra-logo.png)
+![Zephyra Logo](zephyra-frontend/public/images/logo.png)
 
 ## Overview
 
