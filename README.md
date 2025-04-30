@@ -1,6 +1,8 @@
 # Zephyra
 
-![Zephyra Logo](zephyra-frontend/public/images/logo.png)
+<p align="center">
+  <img src="zephyra-frontend/public/images/logo.png" alt="Zephyra Logo" width="300">
+</p>
 
 ## Overview
 
