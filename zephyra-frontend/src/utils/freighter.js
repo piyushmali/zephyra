@@ -1,12 +1,20 @@
 import { isConnected, getPublicKey, signTransaction } from '@stellar/freighter-api';
+import mockFreighter from './mockFreighter';
+import { DEMO_MODE } from './api';
 
 const freighterUtils = {
-  isFreighterInstalled: () => {
+  isFreighterInstalled: async () => {
+    if (DEMO_MODE) {
+      return await mockFreighter.isInstalled();
+    }
     return typeof window !== 'undefined' && window.freighter !== undefined;
   },
 
   checkFreighterConnection: async () => {
     try {
+      if (DEMO_MODE) {
+        return await mockFreighter.isConnected();
+      }
       return await isConnected();
     } catch (error) {
       console.error('Error checking Freighter connection:', error);
@@ -16,6 +24,10 @@ const freighterUtils = {
 
   getFreighterAccountDetails: async () => {
     try {
+      if (DEMO_MODE) {
+        const publicKey = await mockFreighter.getPublicKey();
+        return { publicKey };
+      }
       const publicKey = await getPublicKey();
       return { publicKey };
     } catch (error) {
@@ -26,6 +38,10 @@ const freighterUtils = {
 
   connectWallet: async () => {
     try {
+      if (DEMO_MODE) {
+        // Use mock implementation
+        return await mockFreighter.connect();
+      }
       // Get the public key using the imported function
       const publicKey = await getPublicKey();
       return publicKey;
@@ -35,8 +51,11 @@ const freighterUtils = {
     }
   },
 
-  signTransaction: async (xdr) => {
+  signStellarTransaction: async (xdr) => {
     try {
+      if (DEMO_MODE) {
+        return await mockFreighter.signStellarTransaction(xdr);
+      }
       return await signTransaction(xdr);
     } catch (error) {
       console.error('Error signing transaction:', error);

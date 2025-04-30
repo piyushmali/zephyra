@@ -6,7 +6,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { getPublicKey } from '@stellar/freighter-api';
+import freighterUtils from '../utils/freighter';
+import { DEMO_MODE } from '../utils/api';
 
 const ConnectFreighterButton = ({ onConnect, onDisconnect, publicKey: initialPublicKey, large = false, className = '' }) => {
   const [isConnecting, setIsConnecting] = useState(false);
@@ -22,7 +23,7 @@ const ConnectFreighterButton = ({ onConnect, onDisconnect, publicKey: initialPub
     setIsConnecting(true);
     
     try {
-      const stellarPublicKey = await getPublicKey();
+      const stellarPublicKey = await freighterUtils.connectWallet();
       setPublicKey(stellarPublicKey);
       setWalletConnected(true);
       
@@ -49,6 +50,15 @@ const ConnectFreighterButton = ({ onConnect, onDisconnect, publicKey: initialPub
     ? 'bg-green-500 hover:bg-green-600'
     : 'bg-indigo-600 hover:bg-indigo-700';
 
+  // Format the public key for display
+  const formatPublicKey = (key) => {
+    if (!key) return '';
+    if (typeof key !== 'string') {
+      return DEMO_MODE ? 'GDEMO...7KEY' : 'Unknown';
+    }
+    return `${key.substring(0, 4)}...${key.substring(key.length - 4)}`;
+  };
+
   return (
     <div className="wallet-connect-container">
       {!walletConnected ? (
@@ -62,7 +72,7 @@ const ConnectFreighterButton = ({ onConnect, onDisconnect, publicKey: initialPub
       ) : (
         <div className="flex items-center space-x-2">
           <div className="text-xs text-gray-500 truncate max-w-[150px]">
-            {publicKey.substring(0, 4)}...{publicKey.substring(publicKey.length - 4)}
+            {formatPublicKey(publicKey)}
           </div>
           <button
             onClick={handleDisconnect}

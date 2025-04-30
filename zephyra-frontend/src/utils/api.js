@@ -6,6 +6,10 @@
  */
 
 import axios from 'axios';
+import mockApi from './mockApi';
+
+// Demo mode flag - set to true to use mock API instead of real API
+export const DEMO_MODE = true;
 
 // Base URL for API calls - use environment variable or fallback to localhost
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -22,64 +26,67 @@ const api = axios.create({
   timeout: REQUEST_TIMEOUT
 });
 
-// Add request interceptor for logging and request modification
-api.interceptors.request.use(
-  (config) => {
-    // Log request (only in development)
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`API Request: ${config.method.toUpperCase()} ${config.url}`);
+// Only add interceptors if not in demo mode
+if (!DEMO_MODE) {
+  // Add request interceptor for logging and request modification
+  api.interceptors.request.use(
+    (config) => {
+      // Log request (only in development)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`API Request: ${config.method.toUpperCase()} ${config.url}`);
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
     }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+  );
 
-// Add response interceptor for error handling
-api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    // Format error message based on response
-    let errorMessage = 'An unexpected error occurred';
-    
-    if (error.response) {
-      // Server responded with an error status code
-      const status = error.response.status;
-      const data = error.response.data;
+  // Add response interceptor for error handling
+  api.interceptors.response.use(
+    (response) => {
+      return response;
+    },
+    (error) => {
+      // Format error message based on response
+      let errorMessage = 'An unexpected error occurred';
       
-      if (data && data.message) {
-        errorMessage = data.message;
-      } else if (status === 401) {
-        errorMessage = 'Authentication required. Please reconnect your wallet.';
-      } else if (status === 403) {
-        errorMessage = 'You do not have permission to perform this action.';
-      } else if (status === 404) {
-        errorMessage = 'The requested resource was not found.';
-      } else if (status === 500) {
-        errorMessage = 'Server error. Please try again later.';
-      } else {
-        errorMessage = `Error ${status}: ${data.error || 'Unknown error'}`;
+      if (error.response) {
+        // Server responded with an error status code
+        const status = error.response.status;
+        const data = error.response.data;
+        
+        if (data && data.message) {
+          errorMessage = data.message;
+        } else if (status === 401) {
+          errorMessage = 'Authentication required. Please reconnect your wallet.';
+        } else if (status === 403) {
+          errorMessage = 'You do not have permission to perform this action.';
+        } else if (status === 404) {
+          errorMessage = 'The requested resource was not found.';
+        } else if (status === 500) {
+          errorMessage = 'Server error. Please try again later.';
+        } else {
+          errorMessage = `Error ${status}: ${data.error || 'Unknown error'}`;
+        }
+      } else if (error.request) {
+        // Request was made but no response received
+        if (error.code === 'ECONNABORTED') {
+          errorMessage = 'Request timed out. Please check your connection and try again.';
+        } else {
+          errorMessage = 'No response received from server. Please check your connection.';
+        }
       }
-    } else if (error.request) {
-      // Request was made but no response received
-      if (error.code === 'ECONNABORTED') {
-        errorMessage = 'Request timed out. Please check your connection and try again.';
-      } else {
-        errorMessage = 'No response received from server. Please check your connection.';
-      }
+      
+      // Create a new error with the formatted message
+      const formattedError = new Error(errorMessage);
+      formattedError.originalError = error;
+      formattedError.response = error.response;
+      
+      return Promise.reject(formattedError);
     }
-    
-    // Create a new error with the formatted message
-    const formattedError = new Error(errorMessage);
-    formattedError.originalError = error;
-    formattedError.response = error.response;
-    
-    return Promise.reject(formattedError);
-  }
-);
+  );
+}
 
 /**
  * Set authorization token for API calls
@@ -438,7 +445,7 @@ export const getSupportedAssets = async () => {
 };
 
 // Export all functions as a default object
-export default {
+export default DEMO_MODE ? mockApi : {
   // Auth
   setAuthToken,
   

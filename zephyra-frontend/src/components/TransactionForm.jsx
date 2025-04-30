@@ -8,6 +8,8 @@
 import React, { useState, useEffect } from 'react';
 import freighterUtils from '../utils/freighter';
 import apiUtils from '../utils/api';
+import { DEMO_MODE } from '../utils/api';
+import { useTransactions } from '../utils/transactionContext';
 
 const TransactionForm = ({ publicKey, onTransactionComplete }) => {
   // Form state
@@ -32,6 +34,9 @@ const TransactionForm = ({ publicKey, onTransactionComplete }) => {
   const [step, setStep] = useState(1);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [availableCorridors, setAvailableCorridors] = useState([]);
+
+  // Get transaction context
+  const { addTransaction } = useTransactions();
   
   // Fetch available corridors on component mount
   useEffect(() => {
@@ -184,6 +189,27 @@ const TransactionForm = ({ publicKey, onTransactionComplete }) => {
       // Submit signed transaction and store result
       const submitResult = await apiUtils.submitRemittance(signedXdr, transactionId);
       console.log('Transaction submitted:', submitResult);
+      
+      // Create a new transaction record
+      const newTransaction = {
+        id: transactionId,
+        type: 'remittance',
+        sourceAsset: formData.sourceAsset,
+        destinationAsset: formData.destinationAsset,
+        sourceAmount: parseFloat(formData.amount),
+        destinationAmount: estimatedReceive,
+        exchangeRate: exchangeRate,
+        fee: fee,
+        status: 'completed',
+        timestamp: new Date().toISOString(),
+        sender: publicKey,
+        recipient: formData.destinationAddress,
+        memo: formData.memo || 'No memo',
+        savings: (parseFloat(formData.amount) * 0.05).toFixed(2) // Example savings calculation
+      };
+      
+      // Add the transaction to the context
+      addTransaction(newTransaction);
       
       // Move to result step
       setStep(4);

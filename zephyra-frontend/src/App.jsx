@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { isConnected, getPublicKey } from '@stellar/freighter-api';
 import Navigation from './components/Navigation';
 import Dashboard from './components/Dashboard';
 import TransactionForm from './components/TransactionForm';
 import TransactionHistory from './components/TransactionHistory';
 import LiquidityPool from './components/LiquidityPool';
+import freighterUtils from './utils/freighter';
+import { DEMO_MODE } from './utils/api';
+import { TransactionProvider } from './utils/transactionContext';
 
 /**
  * Main App Component for Zephyra
@@ -17,15 +19,16 @@ function App() {
   const [publicKey, setPublicKey] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [error, setError] = useState(null);
+  const [demoMode] = useState(DEMO_MODE);
 
   // Check wallet connection on app load
   useEffect(() => {
     const checkConnection = async () => {
       try {
-        const connected = await isConnected();
+        const connected = await freighterUtils.checkFreighterConnection();
         if (connected) {
-          const key = await getPublicKey();
-          setPublicKey(key);
+          const { publicKey } = await freighterUtils.getFreighterAccountDetails();
+          setPublicKey(publicKey);
         }
       } catch (err) {
         console.error('Error checking wallet connection:', err);
@@ -77,32 +80,34 @@ function App() {
   };
 
   return (
-    <div className="App min-h-screen bg-gray-100">
-      <Navigation 
-        activeTab={activeTab} 
-        onTabChange={handleTabChange}
-      />
-      
-      <main className="w-full mx-auto py-4 px-2 sm:px-3 lg:px-4">
-        {error && (
-          <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            {error}
-          </div>
-        )}
+    <TransactionProvider>
+      <div className="App min-h-screen bg-gray-100">
+        <Navigation 
+          activeTab={activeTab} 
+          onTabChange={handleTabChange}
+        />
         
-        {renderActiveComponent()}
-      </main>
-      
-      <footer className="bg-white border-t border-gray-200 py-4">
-        <div className="w-full mx-auto px-2 sm:px-3 lg:px-4">
-          <div className="flex justify-center items-center">
-            <div className="text-sm text-gray-500">
-              Built on <a href="https://stellar.org" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800">Stellar</a>
+        <main className="w-full mx-auto py-4 px-2 sm:px-3 lg:px-4">
+          {error && (
+            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
+          
+          {renderActiveComponent()}
+        </main>
+        
+        <footer className="bg-white border-t border-gray-200 py-4">
+          <div className="w-full mx-auto px-2 sm:px-3 lg:px-4">
+            <div className="flex justify-center items-center">
+              <div className="text-sm text-gray-500">
+                Built on <a href="https://stellar.org" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800">Stellar</a>
+              </div>
             </div>
           </div>
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
+    </TransactionProvider>
   );
 }
 
