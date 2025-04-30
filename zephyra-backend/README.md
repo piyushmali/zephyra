@@ -1,6 +1,29 @@
 # Zephyra Backend
 
-Backend server for Zephyra - A Stellar Testnet remittance platform.
+<p align="center">
+  <img src="../zephyra-frontend/public/images/logo.png" alt="Zephyra Logo" width="300">
+</p>
+
+Backend server for Zephyra - A Stellar remittance platform.
+
+## Features
+
+### Stellar Integration
+- **Stellar SDK v11.0.1**: Latest Stellar SDK integration for blockchain operations
+- **Horizon Server Connection**: Using `StellarSdk.Horizon.Server` for server instantiation
+- **Liquidity Pool Operations**: Fetching liquidity pool data with `server.liquidityPools().liquidityPoolId()`
+- **Transaction Management**: Creating, signing, and submitting transactions to the Stellar network
+
+### API Services
+- **User Management**: Create and manage user profiles linked to Stellar accounts
+- **Transaction Processing**: Handle remittance transactions with status tracking
+- **Liquidity Pool Management**: Create, monitor, and manage liquidity pools
+- **Rate Limiting**: Protection against excessive API requests
+
+### Data Storage
+- **MongoDB Integration**: Persistent storage for user data, transactions, and pool information
+- **Redis Caching**: Optional caching for improved performance
+- **Data Validation**: Comprehensive input validation using express-validator
 
 ## Setup
 

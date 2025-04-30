@@ -10,12 +10,45 @@ Zephyra is a Stellar remittance platform that enables users to send, receive, an
 
 ## Features
 
-- **Wallet Integration**: Seamless connection with Freighter wallet for secure transaction signing
-- **Dashboard**: View account balances, recent transactions, and market rates
-- **Remittance**: Send digital assets to other Stellar accounts with low fees
-- **Transaction History**: Track all your past transactions with detailed information
-- **Liquidity Pools**: Participate in liquidity pools to earn rewards and facilitate cross-border payments
-- **Multi-Asset Support**: Support for XLM and other Stellar-based assets
+### Wallet Integration
+- **Freighter Wallet Connection**: Seamless integration with Freighter wallet for secure transaction signing
+- **Multiple Retry Attempts**: Robust wallet detection system with multiple retry attempts
+- **Direct API Access**: Simplified connection process with direct access to Freighter API
+- **Unified Connection UI**: Single wallet connection button in the header for improved user experience
+
+### Dashboard
+- **Account Overview**: View your Stellar account balances and asset holdings at a glance
+- **Recent Transactions**: Display of your most recent transactions with status indicators
+- **Market Rates**: Real-time exchange rates between different asset pairs
+- **Account Statistics**: Visual charts showing transaction history and balance changes
+
+### Remittance Services
+- **Cross-Border Payments**: Send digital assets globally with minimal fees
+- **Multi-Asset Support**: Transfer XLM and other Stellar-based assets
+- **Transaction Confirmation**: Real-time confirmation of transaction status
+- **Memo Support**: Include transaction memos for recipient identification
+- **Address Book**: Save and manage recipient addresses for quick access
+
+### Transaction History
+- **Comprehensive Records**: Complete history of all your transactions
+- **Filtering Options**: Filter transactions by type, asset, date, or status
+- **Export Functionality**: Export transaction history for record-keeping
+- **Transaction Details**: View detailed information about each transaction
+- **Status Tracking**: Track the status of pending transactions
+
+### Liquidity Pools
+- **Pool Participation**: Add liquidity to Stellar liquidity pools to earn rewards
+- **Pool Management**: Monitor and manage your liquidity positions
+- **Reward Tracking**: Track your earned rewards from liquidity provision
+- **Pool Analytics**: View pool composition, volume, and performance metrics
+- **Simplified Interface**: User-friendly interface for interacting with complex liquidity pool operations
+
+### Security Features
+- **Secure Transaction Signing**: All transactions are signed locally in your wallet
+- **No Private Key Storage**: Your private keys never leave your device
+- **Rate Limiting**: Protection against brute force attacks
+- **Input Validation**: Comprehensive validation to prevent malicious inputs
+- **Secure API Communication**: Encrypted communication with backend services
 
 ## Architecture
 
